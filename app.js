@@ -8,7 +8,7 @@ let last_response_time = 0;
 const _24_HOURS_IN_MIllISECONDS = 10000;
 //const _24_HOURS_IN_MIllISECONDS = 86400000;
 
-let vids = fs.readFileSync('vids.txt').toString().split('\r\n');
+let vids = fs.readFileSync('vids.txt').toString().split('\n');
   
 if (vids[vids.length -1].length === 0) {
     vids = vids.slice(0, -1);
