@@ -1,12 +1,11 @@
 const Discord = require("discord.js");
 const fs = require('fs');
 const client = new Discord.Client();
-const DAY_OF_THE_WEEK = 0;  /*Wednesday*/
+const DAY_OF_THE_WEEK = 3;  /*Wednesday*/
 
 let last_response_time = 0;
 
-const _24_HOURS_IN_MIllISECONDS = 10000;
-//const _24_HOURS_IN_MIllISECONDS = 86400000;
+const _24_HOURS_IN_MIllISECONDS = 86400000;
 
 let vids = fs.readFileSync('vids.txt').toString().split('\n');
   
