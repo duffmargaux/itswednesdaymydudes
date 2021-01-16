@@ -43,7 +43,7 @@ const handleMessage = (msg) => {
     let today = now.getDay();
 
     if (today !== DAY_OF_THE_WEEK) {
-        log('I got a message, but it is *not* Wednesday');
+        log('I got a message, but it is *not* Wednesday!!!');
         return;
     }
 
