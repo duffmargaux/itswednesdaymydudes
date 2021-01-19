@@ -2,8 +2,9 @@ const fs = require('fs');
 const Discord = require('discord.js');
 
 
-const DAY_OF_THE_WEEK = 3;  /* Wednesday */
-const _24_HOURS_IN_MIllISECONDS = 86400000;
+const DAY_OF_THE_WEEK = (new Date()).getDay();
+const RECONNECT_FREQUENCY = 21600000;  /* 6 hours */
+const WEDNESDAY_MESSAGE_COOLDOWN = 86400000;  /* 24 hours */
 
 
 /**
@@ -48,7 +49,7 @@ const handleMessage = (msg) => {
     }
 
     let timeSinceLastResponse = nowTimestamp - lastResponseTime;
-    if (timeSinceLastResponse < _24_HOURS_IN_MIllISECONDS){
+    if (timeSinceLastResponse < WEDNESDAY_MESSAGE_COOLDOWN){
         log('I got a message, *and* it is Wednesday,',
             '**BUT** I already did the thing.');
         return;
@@ -89,4 +90,4 @@ const connectAndMonitor = async (periodInMilliseconds) => {
 
 
 /* start the whole process: reconnect four times a day */
-connectAndMonitor(_24_HOURS_IN_MIllISECONDS/4).then(()=>{});
+connectAndMonitor(RECONNECT_FREQUENCY).then(()=>{});
