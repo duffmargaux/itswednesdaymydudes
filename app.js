@@ -1,10 +1,12 @@
 const fs = require('fs');
 const Discord = require('discord.js');
 
+const chronos = require('./lib/chronos');
+
 
 const DAY_OF_THE_WEEK = (new Date()).getDay();
-const RECONNECT_FREQUENCY = 21600000;  /* 6 hours */
-const WEDNESDAY_MESSAGE_COOLDOWN = 86400000;  /* 24 hours */
+
+let announcmentCooldown = new chronos.Cooldown(5000);  /* 5 seconds */
 
 
 /**
@@ -73,21 +75,27 @@ const handleMessage = (msg) => {
  *   - repeat
  */
 const connectAndMonitor = async (periodInMilliseconds) => {
-    let client = new Discord.Client();
+  let cooldown = new chronos.Cooldown(periodInMilliseconds);
+  let client;
+
+  for (;;) {  /* basically a hipster way of writing while(true) { */
+    client = new Discord.Client();
     client.on('ready', () => { log(`Logged in as ${client.user.tag}!`); });
     client.on('message', handleMessage);
     client.login();
 
-    await sleep(periodInMilliseconds);
-
+    await cooldown.asPromise();
     log('Reestablishing connection...');
 
     client.destroy();
-    client = null;
 
-    return await connectAndMonitor(periodInMilliseconds);
+    if (Math.random() < 0.25) {
+      break;
+    }
+  }
 };
 
 
 /* start the whole process: reconnect four times a day */
-connectAndMonitor(RECONNECT_FREQUENCY).then(()=>{});
+const SIX_HOURS = 21600000;
+connectAndMonitor(SIX_HOURS).then(()=>{});
