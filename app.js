@@ -1,7 +1,10 @@
 const fs = require('fs');
+const path = require('path');
+const process = require('process');
 const Discord = require('discord.js');
 
 const chronos = require('./lib/chronos');
+const Voyeur = require('./lib/voyeur');
 
 
 /**
@@ -103,7 +106,9 @@ const handleMessage = (msg) => {
  *   - disconnect
  *   - repeat
  */
-let client;
+let client, channel;
+const CHANNEL_ID = '390605014051323914';
+
 const connectAndMonitor = async (periodInMilliseconds) => {
   let cooldown = new chronos.Cooldown({
     time: periodInMilliseconds,
@@ -114,7 +119,44 @@ const connectAndMonitor = async (periodInMilliseconds) => {
     client = new Discord.Client();
     client.on('ready', () => { log(`Logged in as ${client.user.tag}!`); });
     client.on('message', handleMessage);
+
     await client.login();
+
+    channel = await client.channels.fetch(CHANNEL_ID);
+
+    let afkChannelWatcher = new Voyeur(channel);
+
+    let peopleStillAround = false;
+
+    let handlePresence = (ch, con) => {
+      globalChannel = ch;
+      peopleStillAround = true;
+      let audioPath = path.join(
+        process.env['IWMD_STATIC_ASSET_DIR'], 'FridayFull.mp3');
+      log('Playing audio');
+      let dispatcher = con.play(audioPath, { volume: 0.75 });
+      dispatcher.on('speaking', (speaking) => {
+        if (!speaking) {
+          log('Finished Playing audio');
+          if (peopleStillAround) {
+            log('Restarting because there are still people here.');
+            handlePresence(ch, con);
+          } else {
+            log('Finished, no one is around to listen.');
+            ch.leave();
+            globalChannel = null;
+          }
+        }
+      });
+    };
+
+    afkChannelWatcher.onPresence(handlePresence);
+
+    afkChannelWatcher.onExodus(() => {
+      log('Everyone left, finshing this playback.');
+      peopleStillAround = false;
+    });
+
 
     await cooldown.asPromise();
     log('Reestablishing connection...');
@@ -122,6 +164,18 @@ const connectAndMonitor = async (periodInMilliseconds) => {
   }
 };
 
+let globalChannel;
+const handleCleanExit = (code) => {
+  if (globalChannel) {
+    globalChannel.leave();
+    globalChannel = null;
+  }
+
+  process.exit(code);
+};
+
+process.on('SIGINT', handleCleanExit);
+process.on('SIGTERM', handleCleanExit);
 
 /* start the whole process: reconnect four times a day */
 connectAndMonitor(6*chronos.HOUR).then(()=>{});

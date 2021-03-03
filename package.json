@@ -12,7 +12,10 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "discord.js": "^12.5.1"
+    "discord.js": "^12.5.1",
+    "@discordjs/opus": "^0.4.0",
+    "ffmpeg-static": "^4.2.7",
+    "sodium": "^3.0.2"
   },
   "devDependencies": {
     "nodemon": "^2.0.7"
